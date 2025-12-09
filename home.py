@@ -2,51 +2,61 @@ import streamlit as st
 import time
 
 # --- APP CONFIG ---
-st.set_page_config(page_title="Scan & Go", page_icon="🛍️", layout="wide")
+st.set_page_config(page_title="Scan", page_icon="📸", layout="wide")
 
-# --- CUSTOM CSS (The "Gen Z" styling) ---
+# --- NUCLEAR CSS (Force Full Screen Mobile Look) ---
 st.markdown("""
     <style>
-        /* Hide Streamlit Header/Footer */
+        /* 1. HIDE ALL STREAMLIT UI ELEMENTS */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
         
-        /* Remove top padding to make it full screen */
+        /* 2. REMOVE ALL PADDING (Full Bleed) */
         .block-container {
-            padding-top: 0rem !important;
-            padding-left: 0rem !important;
-            padding-right: 0rem !important;
+            padding: 0 !important;
+            margin: 0 !important;
             max-width: 100% !important;
         }
         
-        /* Hide the camera switcher button (small icon) */
-        button[title="Switch camera"] {
-            display: none;
+        /* 3. CAMERA CONTAINER STYLING */
+        [data-testid="stCameraInput"] {
+            width: 100% !important;
+            border: none !important;
+            background-color: black !important;
         }
         
-        /* Center the camera title */
-        h1 {
-            text-align: center;
-            font-family: sans-serif;
-            font-size: 24px;
-            padding-top: 20px;
+        /* 4. FORCE VIDEO TO BE TALL (The "App" Look) */
+        video {
+            width: 100% !important;
+            height: 80vh !important; /* Takes up 80% of screen height */
+            object-fit: cover !important; /* Zoom to fill screen without stretching */
+            border-radius: 0px !important;
         }
+        
+        /* 5. HIDE THE SWITCH CAMERA BUTTON */
+        /* We target the button inside the camera widget specifically */
+        div[data-testid="stCameraInput"] > div > div > button {
+            display: none !important;
+        }
+        
+        /* 6. HIDE THE SMALL "Take Photo" LABEL IF VISIBLE */
+        label {
+            display: none !important;
+        }
+
     </style>
     """, unsafe_allow_html=True)
 
-# --- APP CONTENT ---
-st.title("Scan Item 📸")
+# --- THE CAMERA WIDGET ---
+# We put it directly on the page, no columns, no containers
+img_file_buffer = st.camera_input("Scanner", label_visibility="hidden")
 
-# --- CAMERA ---
-# We use a container to keep it centered if on desktop, but full on mobile
-with st.container():
-    img_file_buffer = st.camera_input("Scanner", label_visibility="hidden")
-
+# --- REDIRECT LOGIC ---
 if img_file_buffer is not None:
-    # Fake processing
-    with st.spinner("Identifying product..."):
-        time.sleep(1.2)
+    # Fake processing spinner
+    with st.spinner("Processing..."):
+        time.sleep(0.8)
     
-    # Redirect to Bill
+    # Redirect immediately
     st.switch_page("pages/bill.py")
