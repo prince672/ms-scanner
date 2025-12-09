@@ -2,76 +2,90 @@ import streamlit as st
 import time
 import random
 
-# --- PAGE CONFIG ---
-st.set_page_config(page_title="Invoice", page_icon="🧾")
+st.set_page_config(page_title="Bill", layout="centered")
 
-# --- HIDE DEFAULT UI (Clean App Look) ---
-hide_st_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {visibility: hidden;}
-            .block-container {padding-top: 2rem;}
-            </style>
-            """
-st.markdown(hide_st_style, unsafe_allow_html=True)
-
-# --- HEADER ---
-st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Marks_%26_Spencer_Logo.svg/2560px-Marks_%26_Spencer_Logo.svg.png", width=150)
-st.title("Self-Checkout")
-
-# --- INPUT SECTION ---
-# This asks for the name. The bill only shows AFTER they type it.
-name = st.text_input("Enter Customer Name for Billing", placeholder="Type name here...")
-
-if name:
-    # Fake processing delay to make it feel real
-    with st.spinner("Verifying Payment..."):
-        time.sleep(1.5)
-
-    # --- SUCCESS MESSAGE ---
-    st.success("✅ Payment Successful via UPI")
-    
-    # --- THE INVOICE CARD ---
-    st.markdown("---")
-    st.subheader("OFFICIAL RECEIPT")
-    
-    # Random Invoice Number for realism
-    inv_id = random.randint(100000, 999999)
-    current_date = time.strftime("%d-%b-%Y")
-
-    st.write(f"**Customer:** {name}")
-    st.write(f"**Invoice ID:** #MS-{inv_id}")
-    st.write(f"**Date:** {current_date}")
-    
-    st.markdown("### Items")
-    
-    # The Fake Items (Hardcoded for the demo)
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.write("1x Men's Winter Puffer Jacket")
-        st.write("1x Wool Scarf (Grey)")
-    with col2:
-        st.write("₹4,500")
-        st.write("₹1,200")
-
-    st.markdown("---")
-    
-    # Total Calculation
-    col3, col4 = st.columns([3, 1])
-    with col3:
-        st.markdown("### TOTAL PAID")
-    with col4:
-        st.markdown("### ₹5,700")
+# --- CSS FOR CLEAN LOOK ---
+st.markdown("""
+    <style>
+        #MainMenu, footer, header {visibility: hidden;}
+        .block-container {padding-top: 2rem;}
         
-    st.caption("Tax Invoice | Marks & Spencer Pvt Ltd")
+        /* Style for the 'Paper Invoice' look */
+        .invoice-box {
+            background-color: white;
+            padding: 30px;
+            border: 1px dashed #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            font-family: 'Courier New', Courier, monospace;
+            color: black;
+            margin-bottom: 20px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- STATE MANAGEMENT ---
+if "billed" not in st.session_state:
+    st.session_state.billed = False
+
+# --- SCREEN 1: GET DETAILS ---
+if not st.session_state.billed:
+    st.markdown("<br><br>", unsafe_allow_html=True) # Spacing
+    st.title("Complete Purchase")
     
-    st.markdown("---")
+    with st.form("billing_form"):
+        name = st.text_input("Enter Customer Name", placeholder="e.g. Prince")
+        submitted = st.form_submit_button("Generate Bill", type="primary", use_container_width=True)
+        
+        if submitted and name:
+            st.session_state.customer_name = name
+            st.session_state.billed = True
+            st.rerun()
 
-    # --- RESET BUTTON ---
-    # This button takes them back to the scanner to start over
-    if st.button("Scan Next Item 📷", type="primary"):
-        st.switch_page("home.py")
-
+# --- SCREEN 2: THE RECEIPT ---
 else:
-    st.info("Waiting for customer details...")
+    # Generate random invoice details
+    inv_no = random.randint(1000, 9999)
+    date = time.strftime("%d/%m/%Y %H:%M")
+    
+    # HTML Invoice for that "Real Paper" feel
+    invoice_html = f"""
+    <div class="invoice-box">
+        <center>
+            <h3>MARKS & SPENCER</h3>
+            <p>High Street, Mumbai Store</p>
+            <hr>
+        </center>
+        <p><strong>Date:</strong> {date}</p>
+        <p><strong>Bill To:</strong> {st.session_state.customer_name}</p>
+        <p><strong>Inv No:</strong> MS-{inv_no}</p>
+        <hr>
+        <table style="width:100%">
+            <tr>
+                <td style="text-align:left">Winter Puffer Jacket</td>
+                <td style="text-align:right">₹4,500.00</td>
+            </tr>
+            <tr>
+                <td style="text-align:left">Tax (18%)</td>
+                <td style="text-align:right">₹810.00</td>
+            </tr>
+            <tr><td colspan="2"><hr></td></tr>
+            <tr style="font-weight:bold; font-size:18px">
+                <td style="text-align:left">TOTAL</td>
+                <td style="text-align:right">₹5,310.00</td>
+            </tr>
+        </table>
+        <hr>
+        <center>
+            <p>Paid via UPI (Success)</p>
+            <p style="font-size:10px">Thank you for shopping with us!</p>
+            <p style="font-size:20px">barcode_here_||||||</p>
+        </center>
+    </div>
+    """
+    st.markdown(invoice_html, unsafe_allow_html=True)
+
+    # --- BUTTON: BACK TO CANVA ---
+    # Replace this link with your ACTUAL Canva prototype link
+    canva_link = "https://markndspencer.my.canva.site/page-2" 
+    
+    st.link_button("⬅ Back to App Menu", canva_link, type="secondary", use_container_width=True)

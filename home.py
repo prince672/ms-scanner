@@ -2,39 +2,51 @@ import streamlit as st
 import time
 
 # --- APP CONFIG ---
-st.set_page_config(page_title="M&S Scan", page_icon="🛍️", layout="wide")
+st.set_page_config(page_title="Scan & Go", page_icon="🛍️", layout="wide")
 
-# --- HIDE STREAMLIT UI (Makes it look like a real app) ---
-hide_st_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {visibility: hidden;}
-            .block-container {padding-top: 1rem;}
-            </style>
-            """
-st.markdown(hide_st_style, unsafe_allow_html=True)
+# --- CUSTOM CSS (The "Gen Z" styling) ---
+st.markdown("""
+    <style>
+        /* Hide Streamlit Header/Footer */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        
+        /* Remove top padding to make it full screen */
+        .block-container {
+            padding-top: 0rem !important;
+            padding-left: 0rem !important;
+            padding-right: 0rem !important;
+            max-width: 100% !important;
+        }
+        
+        /* Hide the camera switcher button (small icon) */
+        button[title="Switch camera"] {
+            display: none;
+        }
+        
+        /* Center the camera title */
+        h1 {
+            text-align: center;
+            font-family: sans-serif;
+            font-size: 24px;
+            padding-top: 20px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
-# --- TITLE ---
-st.title("Scan & Go 🛍️")
-st.caption("Point your camera at the barcode")
+# --- APP CONTENT ---
+st.title("Scan Item 📸")
 
-# --- THE CAMERA ---
-# This widget turns on the camera.
-# As soon as you snap a photo, 'img_file_buffer' gets data.
-img_file_buffer = st.camera_input("Scan Barcode", label_visibility="hidden")
+# --- CAMERA ---
+# We use a container to keep it centered if on desktop, but full on mobile
+with st.container():
+    img_file_buffer = st.camera_input("Scanner", label_visibility="hidden")
 
-# --- THE REDIRECT LOGIC ---
 if img_file_buffer is not None:
-    # If a picture is taken, we assume the code was scanned successfully.
+    # Fake processing
+    with st.spinner("Identifying product..."):
+        time.sleep(1.2)
     
-    # 1. Show a quick spinner so the user feels "processing" is happening
-    with st.spinner("Processing Barcode..."):
-        time.sleep(1.2) # Fake delay
-    
-    # 2. Show Success
-    st.success("Item Detected: Winter Jacket")
-    time.sleep(0.5)
-    
-    # 3. TRIGGER THE REDIRECT (This is the magic line)
+    # Redirect to Bill
     st.switch_page("pages/bill.py")
