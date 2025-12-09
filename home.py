@@ -1,45 +1,40 @@
 import streamlit as st
-import cv2
-import numpy as np
 import time
 
 # --- APP CONFIG ---
 st.set_page_config(page_title="M&S Scan", page_icon="🛍️", layout="wide")
 
-# --- HIDE STREAMLIT UI (Make it look like a native app) ---
+# --- HIDE STREAMLIT UI (Makes it look like a real app) ---
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             header {visibility: hidden;}
-            .block-container {padding-top: 0rem;} /* Remove top padding */
+            .block-container {padding-top: 1rem;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
-# --- UI LAYER ---
-# Display your Canva background (optional)
-# st.image("bg.png", use_column_width=True)
+# --- TITLE ---
+st.title("Scan & Go 🛍️")
+st.caption("Point your camera at the barcode")
 
-st.title("M&S Scan & Go 🛍️")
-st.markdown("### Point camera at product barcode")
-
-# --- CAMERA INPUT ---
+# --- THE CAMERA ---
+# This widget turns on the camera.
+# As soon as you snap a photo, 'img_file_buffer' gets data.
 img_file_buffer = st.camera_input("Scan Barcode", label_visibility="hidden")
 
+# --- THE REDIRECT LOGIC ---
 if img_file_buffer is not None:
-    # Convert the file to an opencv image
-    bytes_data = img_file_buffer.getvalue()
-    cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-
-    # In a real app, we would use pyzbar here to decode the barcode.
-    # For this DEMO, we assume if a picture is taken, it's the correct product.
+    # If a picture is taken, we assume the code was scanned successfully.
     
+    # 1. Show a quick spinner so the user feels "processing" is happening
     with st.spinner("Processing Barcode..."):
-        time.sleep(1.5) # Fake processing time
-        
-    st.success("Product Found: Winter Jacket!")
-    time.sleep(1)
+        time.sleep(1.2) # Fake delay
     
-    # --- REDIRECT TO BILL ---
+    # 2. Show Success
+    st.success("Item Detected: Winter Jacket")
+    time.sleep(0.5)
+    
+    # 3. TRIGGER THE REDIRECT (This is the magic line)
     st.switch_page("pages/bill.py")
