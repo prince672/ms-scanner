@@ -1,62 +1,71 @@
 import streamlit as st
 import time
 
-# --- APP CONFIG ---
 st.set_page_config(page_title="Scan", page_icon="📸", layout="wide")
 
-# --- NUCLEAR CSS (Force Full Screen Mobile Look) ---
+# Inject JS to force back camera
 st.markdown("""
-    <style>
-        /* 1. HIDE ALL STREAMLIT UI ELEMENTS */
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
-        
-        /* 2. REMOVE ALL PADDING (Full Bleed) */
-        .block-container {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: 100% !important;
-        }
-        
-        /* 3. CAMERA CONTAINER STYLING */
-        [data-testid="stCameraInput"] {
-            width: 100% !important;
-            border: none !important;
-            background-color: black !important;
-        }
-        
-        /* 4. FORCE VIDEO TO BE TALL (The "App" Look) */
-        video {
-            width: 100% !important;
-            height: 80vh !important; /* Takes up 80% of screen height */
-            object-fit: cover !important; /* Zoom to fill screen without stretching */
-            border-radius: 0px !important;
-        }
-        
-        /* 5. HIDE THE SWITCH CAMERA BUTTON */
-        /* We target the button inside the camera widget specifically */
-        div[data-testid="stCameraInput"] > div > div > button {
-            display: none !important;
-        }
-        
-        /* 6. HIDE THE SMALL "Take Photo" LABEL IF VISIBLE */
-        label {
-            display: none !important;
-        }
+<script>
+navigator.mediaDevices.getUserMedia = (constraints) => {
+    constraints = constraints || {};
+    constraints.video = constraints.video || {};
+    constraints.video.facingMode = { exact: "environment" }; // FORCE BACK CAMERA
+    return navigator.mediaDevices.__proto__.getUserMedia.call(navigator.mediaDevices, constraints);
+}
+</script>
+""", unsafe_allow_html=True)
 
-    </style>
-    """, unsafe_allow_html=True)
 
-# --- THE CAMERA WIDGET ---
-# We put it directly on the page, no columns, no containers
-img_file_buffer = st.camera_input("Scanner", label_visibility="hidden")
+# CSS for fullscreen camera & no switch button
+st.markdown("""
+<style>
 
-# --- REDIRECT LOGIC ---
-if img_file_buffer is not None:
-    # Fake processing spinner
+    #MainMenu, footer, header {visibility: hidden !important;}
+
+    .block-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    [data-testid="stCameraInput"] {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    [data-testid="stCameraInput"] > div {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Fullscreen video */
+    [data-testid="stCameraInput"] video {
+        width: 100vw !important;
+        height: 88vh !important;
+        object-fit: cover !important;
+        border-radius: 0 !important;
+        background: #000 !important;
+    }
+
+    /* Hide camera switch button */
+    [data-testid="stCameraInput"] button {
+        display: none !important;
+    }
+
+    label { display: none !important; }
+
+</style>
+""", unsafe_allow_html=True)
+
+
+
+# CAMERA WIDGET
+img = st.camera_input("scanner", label_visibility="hidden")
+
+if img is not None:
     with st.spinner("Processing..."):
-        time.sleep(0.8)
-    
-    # Redirect immediately
+        time.sleep(0.6)
     st.switch_page("pages/bill.py")
